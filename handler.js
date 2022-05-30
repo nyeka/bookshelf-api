@@ -44,9 +44,7 @@ const addBook = (request, h) => {
         bookId: id,
       },
     });
-    if (!name && pageCount < readPage) {
-      books.pop(NewBook);
-    }
+
     response.code(201);
     return response;
   }
