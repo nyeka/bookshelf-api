@@ -15,8 +15,8 @@ const addBook = (request, h) => {
   } = request.payload;
 
   const id = nanoid(16);
-  const createdAt = new Date().toISOString();
-  const updateAt = createdAt;
+  const insertedAt = new Date().toISOString();
+  const updatedAt = insertedAt;
   const finished = pageCount === readPage;
 
   const NewBook = {
@@ -30,14 +30,13 @@ const addBook = (request, h) => {
     readPage,
     finished,
     reading,
-    createdAt,
-    updateAt,
+    insertedAt,
+    updatedAt,
   };
+  books.push(NewBook);
 
-  const isSuccess = books.filter((n) => n.id !== id).length > 0;
-
-  if (isSuccess && name.length > 0 && pageCount > readPage) {
-    books.push(NewBook);
+  const isExist = books.filter((book) => book.id === id).length > 0;
+  if (isExist && name && pageCount > readPage) {
     const response = h.response({
       status: "success",
       message: "Buku berhasil ditambahkan",
@@ -45,26 +44,31 @@ const addBook = (request, h) => {
         bookId: id,
       },
     });
+    if (!name && pageCount < readPage) {
+      books.pop(NewBook);
+    }
     response.code(201);
     return response;
-  } else if (name.length === 0) {
+  }
+  if (!name) {
     const response = h.response({
       status: "fail",
       message: "Gagal menambahkan buku. Mohon isi nama buku",
     });
+    books.pop(NewBook);
     response.code(400);
     return response;
-  } else if (readPage > pageCount) {
+  }
+  if (readPage > pageCount) {
     const response = h.response({
       status: "fail",
       message:
         "Gagal menambahkan buku. readPage tidak boleh lebih besar dari pageCount",
     });
+    books.pop(NewBook);
     response.code(400);
     return response;
   }
-  books.push(NewBook);
-
   const response = h.response({
     status: "error",
     message: "Buku gagal ditambahkan",
@@ -86,7 +90,7 @@ const getAllBookssHandler = () => ({
   },
 });
 
-const deleteNoteHandler = (req, h) => {
+const deleteBookHandler = (req, h) => {
   const { id } = req.params;
 
   const index = books.findIndex((note) => note.id === id);
@@ -107,7 +111,7 @@ const deleteNoteHandler = (req, h) => {
   response.code(404);
   return response;
 };
-const editNoteByHandler = (req, h) => {
+const editBooksByHandler = (req, h) => {
   const { id } = req.params;
 
   const {
@@ -120,11 +124,10 @@ const editNoteByHandler = (req, h) => {
     readPage,
     reading,
   } = req.payload;
-  const updateAt = new Date().toISOString();
 
   const index = books.findIndex((note) => note.id === id);
 
-  if (index !== -1 && name.length > 0 && pageCount > readPage) {
+  if (index !== -1 && pageCount > readPage && name) {
     books[index] = {
       ...books[index],
       name,
@@ -135,7 +138,6 @@ const editNoteByHandler = (req, h) => {
       pageCount,
       readPage,
       reading,
-      updateAt,
     };
     const response = h.response({
       status: "success",
@@ -143,14 +145,16 @@ const editNoteByHandler = (req, h) => {
     });
     response.code(200);
     return response;
-  } else if (name.length === 0) {
+  }
+  if (!name) {
     const response = h.response({
       status: "fail",
       message: "Gagal memperbarui buku. Mohon isi nama buku",
     });
     response.code(400);
     return response;
-  } else if (readPage > pageCount) {
+  }
+  if (readPage > pageCount) {
     const response = h.response({
       status: "fail",
       message:
@@ -167,16 +171,16 @@ const editNoteByHandler = (req, h) => {
   return response;
 };
 
-const getNoteByIdHandler = (req, h) => {
+const getBooksByIdHandler = (req, h) => {
   const { id } = req.params;
 
-  const buku = books.filter((n) => n.id === id)[0];
+  const book = books.filter((n) => n.id === id)[0];
 
-  if (buku !== undefined) {
+  if (book) {
     return {
       status: "success",
       data: {
-        buku,
+        book,
       },
     };
   }
@@ -191,7 +195,7 @@ const getNoteByIdHandler = (req, h) => {
 module.exports = {
   addBook,
   getAllBookssHandler,
-  getNoteByIdHandler,
-  deleteNoteHandler,
-  editNoteByHandler,
+  deleteBookHandler,
+  getBooksByIdHandler,
+  editBooksByHandler,
 };
