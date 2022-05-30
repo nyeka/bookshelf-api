@@ -42,10 +42,10 @@ const addBook = (request, h) => {
       status: "success",
       message: "Buku berhasil ditambahkan",
       data: {
-        noteId: id,
+        bookId: id,
       },
     });
-    response.code(200);
+    response.code(201);
     return response;
   } else if (name.length === 0) {
     const response = h.response({
@@ -69,6 +69,7 @@ const addBook = (request, h) => {
     status: "error",
     message: "Buku gagal ditambahkan",
   });
+  response.code(500);
   return response;
 };
 
